@@ -5,9 +5,103 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
-Introduction
-
-```{r}
-data <- read.csv("Provisional_COVID-19_Deaths_by_Sex_and_Age.csv")
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
+**Introduction**
+
+Coronavirus disease (COVID-19) is an infectious disease caused by the SARS-CoV-2 virus.Most people infected with the virus will experience mild to moderate respiratory illness and recover without requiring special treatment. However, some will become seriously ill and require medical attention. Anyone can get sick with COVID-19 and become seriously ill or die at any age[1]. This project aimed to discover the US death data of this disease, including the exploratory data analysis about different variables -- state, sex, age, pneumonia death, and influenza death. It is significant to find the relationship between these variables and fatalities. Exploring the regularity and distribution of these data may be more conducive to the study of the death rate of this disease.
+
+**Methods**
+
+The data is downloaded from the database of Centers for Disease Control and Prevention (https://data.cdc.gov/NCHS/Provisional-COVID-19-Deaths-by-Sex-and-Age/9bhg-hcku). The data introduce provisional COVID-19 deaths by sex and age from January 1st, 2020 to October 8th, 2022. Deaths involving coronavirus disease 2019 (COVID-19), pneumonia, and influenza were reported to NCHS by sex, age group, and jurisdiction of occurrence[2]. Read data with data.table::fread().
+```{r}
+library(data.table)
+data <- data.table::fread("Provisional_COVID-19_Deaths_by_Sex_and_Age.csv")
+```
+
+  
+
+Perform basic overview into the data.
+```{r}
+dim(data)
+```
+  
+
+It indicates that the data has 104652 rows and 16 columns. Use str() to check those variables. It has character variables: Data As Of- Date of analysis, Start Date- First date of data period, End Date- 	
+Last date of data period, Group- Indicator of whether data measured by Month, by Year, or Total, State- Jurisdiction of occurrence, Sex, Age Group, Footnote-Suppressed counts (1-9), and integer variables: Year- Year in which death occurred, Month- Month in which death occurred, COVID-19 Deaths- Deaths involving COVID-19 (ICD-code U07.1), Total Deaths- Deaths from all causes of death, Pneumonia Deaths- Pneumonia Deaths (ICD-10 codes J12.0-J18.9), Pneumonia and COVID-19 Deaths-	
+Deaths with Pneumonia and COVID-19, Influenza Deaths and Pneumonia, Influenza, or COVID-19 Deaths- Deaths with Pneumonia, Influenza, or COVID-19. 
+  
+
+Then operate data cleaning and wrangling. Begin with library packages- lubridate, tidyverse and dtplyr.
+```{r}
+library(lubridate)
+library(tidyverse)
+library(dtplyr)
+```
+
+
+We find that the data is composed of two parts: grouped by total and grouped by month. For the convenience of future analytics, we only take the group by month part.
+```{r}
+data <- data[!is.na(Month)]
+data <- data[!is.na(Year)]
+```
+
+
+It is noticed that as we have some NA in COVID-19 Deaths, Total Deaths, Pneumonia and COVID-19 Deaths, Pneumonia and COVID-19 Deaths, Influenza Deaths and Pneumonia, Influenza, or COVID-19 Deaths part. We can check their proportion first.
+```{r}
+ratio1 = sum(is.na(data$`COVID-19 Deaths`))/sum(complete.cases(data$`COVID-19 Deaths`))
+ratio2 = sum(is.na(data$`Total Deaths`))/sum(complete.cases(data$`Total Deaths`))
+ratio3 = sum(is.na(data$`Pneumonia Deaths`))/sum(complete.cases(data$`Pneumonia Deaths`))
+ratio4 = sum(is.na(data$`Pneumonia and COVID-19 Deaths`))/sum(complete.cases(data$`Pneumonia and COVID-19 Deaths`))
+ratio5 = sum(is.na(data$`Influenza Deaths`))/sum(complete.cases(data$`Influenza Deaths`))
+ratio6 = sum(is.na(data$`Pneumonia, Influenza, or COVID-19 Deaths`))/sum(complete.cases(data$`Pneumonia, Influenza, or COVID-19 Deaths`))
+c(ratio1,ratio2,ratio3,ratio4,ratio5,ratio6)%>%
+knitr::kable()
+```
+  
+  
+From the result shown above, the NA proportion are over 10%. We cannot delete them directly. 
+  
+To find the proportion of death due to COVID-19 in total number of death. We add a new variable called "COVID-19 Death/Total".
+```{r}
+COVID_Death_Proportion <- data$`COVID-19 Deaths`/data$`Total Deaths`
+data <- cbind(data, COVID_Death_Proportion)
+```
+  
+Next step is to build up some exploratory graphs.We look at some of the key variables first and build up more in next section.
+```{r}
+plot(
+  data$Month, data$`COVID-19 Deaths`, pch=20, cex=2,
+  main = "Plot of COVID-19 Deaths and Month",
+  xlab= "Month", ylab="COVID-19 Deaths")
+```
+
+For the plot shown above, the dots show the distribution of one of the key variables- Covid-19 death by month. The figure shows that the number of covid-19 deaths has higher values at the beginning and the end of years (approximately in winter) and lower values in the middle of years. Surely we will have more detailed visualization analysis of the data later above.
+
+  
+**Preliminary Result**:provide summary statistics in tabular form and publication-quality figures, take a look at the kable function from knitr to write nice tables in Rmarkdown
+
+```{r}
+s1 <- summary(data$'COVID-19 Deaths')
+s2 <- summary(data$`Total Deaths`)
+s3 <- summary(data$`Pneumonia Deaths`)
+s4 <- summary(data$`Pneumonia and COVID-19 Deaths`)
+s5 <- summary(data$`Influenza Deaths`)
+s6 <- summary(data$`Pneumonia, Influenza, or COVID-19 Deaths`)
+s7 <- summary(data$COVID_Death_Proportion)
+rbind(s1, s2, s3, s4, s5, s6, s7)%>%
+knitr::kable()
+```
+
+  In addition, we 
+
+
+**Conclusion** : what you found in terms of the formulated question
+
+
+**Reference List**
+[1]World Health Organizations, https://www.who.int/health-topics/coronavirus#tab=tab_1.
+
+[2]Centers for Disease Control and Prevention, https://data.cdc.gov/NCHS/Provisional-COVID-19-Deaths-by-Sex-and-Age/9bhg-hcku.
