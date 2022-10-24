@@ -22,7 +22,6 @@ data <- data.table::fread("Provisional_COVID-19_Deaths_by_Sex_and_Age.csv")
 ```
 
   
-
 Perform basic overview into the data.
 ```{r}
 dim(data)
@@ -194,6 +193,7 @@ After a series of analyses, we have some preliminary answers to questions. The n
 
 
 **Reference List**
+
 [1]World Health Organizations, https://www.who.int/health-topics/coronavirus#tab=tab_1.
 
 [2]Centers for Disease Control and Prevention, https://data.cdc.gov/NCHS/Provisional-COVID-19-Deaths-by-Sex-and-Age/9bhg-hcku.
