@@ -102,6 +102,7 @@ From the summary table, the average number of death cases caused by Covid has de
 data%>%
   ggplot()+geom_violin(mapping = aes(x=1, y=COVID_Death_Proportion, color=Year, fill=Year))+ facet_wrap(~Year)+ggtitle("Violin Plots of Covid-19 Death Proportion by Year")
 ```
+
 It shows that the highest proportion was reported in 2020 and decreased by year, which is comply with the regulation of the table presentation above.
 
 We go on with the sex variable and do some summary first.
@@ -122,6 +123,7 @@ From the table, male has a higher average than female in Covid-19 death cases bu
   stat_summary(fun.data = mean_sdl, geom= "pointrange")+
   stat_summary(fun.data = mean_sdl, geom= "errorbar")+ggtitle("Summary Statistics of Covid-19 Death by Sex")
 ```
+
 The plots show that the male group, which holds a higher average case number, has a wider range of bars. In this case, they also have a larger standard deviation in death cases caused by Covid-19.
 
 The next step is states, we build up a summary table for average death cases and proportion by the state like before and arrange it by descending order of cases. Texas has the most number of cases.
@@ -168,6 +170,7 @@ data[!is.na(Sex)]%>%
 data%>%
   ggplot(mapping = aes(x= `COVID-19 Deaths`, y=`COVID_Death_Proportion`))+geom_point(mapping = aes(color= `Age Group`))+geom_smooth(method=lm, mapping = aes(linetype= `Age Group`))+facet_wrap(~`Age Group`, nrow=5)+ggtitle("Plots for Age Group, Deaths and Proportion")
 ```
+
 This figure is another exploration of correlation by age groups. It indicates that among the older age groups, there might be a correlation between death cases and proportions. Future research is required on these questions.
 
 At last, we do some summary about other integer variables. Just for your information
@@ -185,7 +188,9 @@ knitr::kable()
 
 
 **Conclusion** 
-In Conclusion,
+
+In this project, we mainly deal with the data set describing the death data of Covid-19 disease by time, state, sex, and age groups. Our objective is to find the distribution and regulation of different variables versus death data. 
+After a series of analyses, we have some preliminary answers to questions. The number of Covid-19 deaths is higher at the beginning and the end of years and lower values in the middle of years. We may reference the regulation related to season factors. The death cases increased in winter. For years, the average number of death cases caused by Covid-19 has decreased by year. This trend didn't apply to the proportions of death caused by Covid in the total death numbers. The highest proportion was reported in 2020 and decreased by the year. With different sex, the male has a higher average than female in Covid-19 death cases but their proportion of death are similar. They also have a larger standard deviation in death cases caused by Covid-19. On the scope of states, Texas and California hold the most Covid-19 cases. For the age group, the cases number increases with age increasing. The older the age group, the larger number of deaths caused by Covid-19. We also noticed the proportion increase, it is feasible to find a correlation later but it may also relate to some other reasons. Later explore about correlations make me find correlations by age group. There might be a correlation between death cases and proportions in the older age group but future research is necessary.
 
 
 **Reference List**
