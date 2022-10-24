@@ -42,7 +42,7 @@ library(dtplyr)
 ```
 
 
-We find that the data is composed of two parts: grouped by total and grouped by month. For the convenience of future analytics, we only take the group by month part.
+We find that the data is composed of two parts: grouped by total and grouped by month. For the convenience of future analytics, we only take the group by-month part.
 ```{r}
 data <- data[!is.na(Month)]
 data <- data[!is.na(Year)]
@@ -62,7 +62,7 @@ knitr::kable()
 ```
   
   
-From the result shown above, the NA proportion are over 10%. We cannot delete them directly. 
+From the result shown above, the NA proportion is over 10%. We cannot delete them directly. 
   
 To find the proportion of death due to COVID-19 in total number of death. We add a new variable called "COVID-19 Death/Total".
 ```{r}
@@ -70,7 +70,7 @@ COVID_Death_Proportion <- data$`COVID-19 Deaths`/data$`Total Deaths`
 data <- cbind(data, COVID_Death_Proportion)
 ```
   
-Next step is to build up some exploratory graphs.We look at some of the key variables first and build up more in next section.
+The next step is to build up some exploratory graphs. We look at some of the key variables first and build up more in the next section.
 ```{r}
 plot(
   data$Month, data$`COVID-19 Deaths`, pch=20, cex=2,
@@ -78,11 +78,99 @@ plot(
   xlab= "Month", ylab="COVID-19 Deaths")
 ```
 
-For the plot shown above, the dots show the distribution of one of the key variables- Covid-19 death by month. The figure shows that the number of covid-19 deaths has higher values at the beginning and the end of years (approximately in winter) and lower values in the middle of years. Surely we will have more detailed visualization analysis of the data later above.
+For the plot shown above, the dots show the distribution of one of the key variables- Covid-19 death by month. The figure shows that the number of covid-19 deaths has higher values at the beginning and the end of years (approximately in winter) and lower values in the middle of years. Surely we will have a more detailed visualization analysis of the data later below.
 
   
-**Preliminary Result**:provide summary statistics in tabular form and publication-quality figures, take a look at the kable function from knitr to write nice tables in Rmarkdown
+**Preliminary Result**
+We are going to perform some visualization to explore the data set. The figures are about key variables we focus on and find out the regulation and distribution.
+```{r}
+library(ggplot2)
+```
 
+We can discover the variables about year and month. First, we did a summary of the average covid death cases, and covid proportion each year.
+```{r}
+data %>% group_by(Year)%>%
+  summarise(
+    Avg_covid_death  =mean(`COVID-19 Deaths`, na.rm= TRUE),
+    Avg_covid_proportion = mean(COVID_Death_Proportion, na.rm =TRUE)
+  )%>%
+knitr::kable()
+```
+
+From the summary table, the average number of death cases caused by Covid has decreased by year. However, the proportion of Covid-19 seems higher in 2021 than in 2020 and then goes back to around 6% in 2022. Next step, we build up a violin plot to show the Covid-19 proportion distribution by year.
+```{r}
+data%>%
+  ggplot()+geom_violin(mapping = aes(x=1, y=COVID_Death_Proportion, color=Year, fill=Year))+ facet_wrap(~Year)+ggtitle("Violin Plots of Covid-19 Death Proportion by Year")
+```
+It shows that the highest proportion was reported in 2020 and decreased by year, which is comply with the regulation of the table presentation above.
+
+We go on with the sex variable and do some summary first.
+```{r}
+data %>% group_by(Sex)%>%
+  summarise(
+    Avg_covid_death  =mean(`COVID-19 Deaths`, na.rm= TRUE),
+    Avg_covid_proportion = mean(COVID_Death_Proportion, na.rm =TRUE)
+  )%>%
+knitr::kable()
+```
+
+From the table, male has a higher average than female in Covid-19 death cases but their proportion of death are similar. For deeper analysis, we use stat_summay to examine mean death cases by sex with standard deviation error bars.
+
+```{r}
+  data[!is.na(`COVID-19 Deaths`)]%>%
+  ggplot(mapping = aes(x= `Sex`, y= `COVID-19 Deaths` ))+
+  stat_summary(fun.data = mean_sdl, geom= "pointrange")+
+  stat_summary(fun.data = mean_sdl, geom= "errorbar")+ggtitle("Summary Statistics of Covid-19 Death by Sex")
+```
+The plots show that the male group, which holds a higher average case number, has a wider range of bars. In this case, they also have a larger standard deviation in death cases caused by Covid-19.
+
+The next step is states, we build up a summary table for average death cases and proportion by the state like before and arrange it by descending order of cases. Texas has the most number of cases.
+```{r}
+data %>% group_by(State)%>%
+  summarise(
+    Avg_covid_death  =mean(`COVID-19 Deaths`, na.rm= TRUE),
+    Avg_covid_proportion = mean(COVID_Death_Proportion, na.rm =TRUE)
+  )%>%arrange(desc(Avg_covid_death))%>%
+knitr::kable()
+```
+
+To make it more clear, a bar chart is shown below. In this figure, Texas and California have the longest bar and Vermont has the shortest.
+
+```{r}
+subset <- data[!(State == "United States")]
+subset[!is.na(`COVID-19 Deaths`)]%>%
+  ggplot(aes(x= `COVID-19 Deaths`, y=fct_reorder(State, `COVID-19 Deaths`)))+geom_col(width = 0.5)+ggtitle("Bar Plots of Covid-19 Death by State")
+```
+
+Have a look at age groups. Repeat the same actions to average Covid deaths and proportions and arrange them by descending order of covid death. It is noticeable that the cases number increases with age increasing. The older the age group, the larger number of deaths caused by Covid-19. We also noticed the proportion increase, it is feasible to find a correlation later but it may also relate to some other reasons.
+```{r}
+data %>% group_by(`Age Group`)%>%
+  summarise(
+    Avg_covid_death  =mean(`COVID-19 Deaths`, na.rm= TRUE),
+    Avg_covid_proportion = mean(COVID_Death_Proportion, na.rm =TRUE)
+  )%>%arrange(desc(Avg_covid_death))%>%
+knitr::kable()
+```
+
+Perform a bar chart again to show the trend. The number of Covid-19 deaths among older age groups is much higher than among younger age groups, and there is a trend of increasing with age.
+```{r}
+subset2 <- data[!(`Age Group` == "All Ages")]
+subset2[!is.na(`COVID-19 Deaths`)]%>%
+  ggplot(aes(x= `COVID-19 Deaths`, y=fct_reorder(`Age Group`, `COVID-19 Deaths`)))+geom_col(width = 0.7)+ggtitle("Bar Plots of Covid-19 Death by Age Groups")
+```
+
+We can also do some correlation analysis. The figure below shows the trending between the proportion of death caused by covid and the covid death cases. The color indicates the sex group. Different colors represent different sex. From the line, we cannot have a specific conclusion about the correlation.
+```{r}
+data[!is.na(Sex)]%>%
+  ggplot(mapping = aes(x=data$`COVID-19 Deaths`, y= data$COVID_Death_Proportion))+ geom_point(mapping = aes(color= Sex))+geom_smooth()+ggtitle("Plot for Covid-Proportion and Covid-Cases")
+```
+```{r}
+data%>%
+  ggplot(mapping = aes(x= `COVID-19 Deaths`, y=`COVID_Death_Proportion`))+geom_point(mapping = aes(color= `Age Group`))+geom_smooth(method=lm, mapping = aes(linetype= `Age Group`))+facet_wrap(~`Age Group`, nrow=5)+ggtitle("Plots for Age Group, Deaths and Proportion")
+```
+This figure is another exploration of correlation by age groups. It indicates that among the older age groups, there might be a correlation between death cases and proportions. Future research is required on these questions.
+
+At last, we do some summary about other integer variables. Just for your information
 ```{r}
 s1 <- summary(data$'COVID-19 Deaths')
 s2 <- summary(data$`Total Deaths`)
@@ -95,10 +183,9 @@ rbind(s1, s2, s3, s4, s5, s6, s7)%>%
 knitr::kable()
 ```
 
-  In addition, we 
 
-
-**Conclusion** : what you found in terms of the formulated question
+**Conclusion** 
+In Conclusion,
 
 
 **Reference List**
